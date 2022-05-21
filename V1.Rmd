@@ -1,0 +1,94 @@
+---
+title: "predictionsmodel"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+#authorization token for git
+auth <- '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'
+```
+
+```{r}
+setwd("~/Library/CloudStorage/GoogleDrive-randyhutton21@gmail.com/My Drive/Kaggle/Test/kagglehousing/kagglehousing")
+test <- read_csv('test.csv')
+train <- read_csv('train.csv')
+head(train)
+head(test)
+```
+
+```{r}
+train <- train %>%
+  mutate_at(c('MSZoning', 'MSSubClass', 'Street', 'Alley', 'LotShape', 'LandContour', 'Utilities', 'LotConfig',
+              'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'PoolQC', 'Fence', 'MiscFeature', 'SaleType', 'SaleCondition','OverallQual', 'OverallCond', 
+              'YearBuilt', 'YearRemodAdd', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 
+              'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1',
+              'BsmtFinType2', 'Heating', 'HeatingQC', 'CentralAir', 'Electrical', 'KitchenQual', 'Functional', 
+              'FireplaceQu', 'GarageType', 'GarageFinish', 'GarageQual', 'GarageCond', 'PavedDrive',
+              'PoolQC', 'Fence', 'MiscFeature', 'SaleType', 'SaleCondition', 'GarageYrBlt', 'MoSold', 
+              'YrSold'), ~as.factor(.))
+
+test <- test %>%
+  mutate_at(c('MSZoning', 'MSSubClass', 'Street', 'Alley', 'LotShape', 'LandContour', 'Utilities', 'LotConfig',
+              'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'PoolQC', 'Fence', 'MiscFeature', 'SaleType', 'SaleCondition','OverallQual', 'OverallCond', 
+              'YearBuilt', 'YearRemodAdd', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd', 'MasVnrType', 
+              'ExterQual', 'ExterCond', 'Foundation', 'BsmtQual', 'BsmtCond', 'BsmtExposure', 'BsmtFinType1',
+              'BsmtFinType2', 'Heating', 'HeatingQC', 'CentralAir', 'Electrical', 'KitchenQual', 'Functional', 
+              'FireplaceQu', 'GarageType', 'GarageFinish', 'GarageQual', 'GarageCond', 'PavedDrive',
+              'PoolQC', 'Fence', 'MiscFeature', 'SaleType', 'SaleCondition', 'GarageYrBlt', 'MoSold', 
+              'YrSold'), ~as.factor(.))
+```
+
+```{r}
+summary(train)
+```
+
+```{r}
+correlationsframe <- train %>%
+  select_if(is.numeric)%>%
+  na.omit()
+correlationsframe
+```
+
+```{r}
+library(corrplot)
+correlations <- cor(na.omit(correlationsframe))
+corrplot(correlations, method = "square")
+```
+
+```{r}
+model <- glm(SalePrice ~ GarageArea + GarageCars + Fireplaces + FullBath + GrLivArea + TotalBsmtSF + `1stFlrSF` + BsmtFinSF1, data = train)
+
+pricepredictions <- predict(model, test)
+```
+
+```{r}
+head(pricepredictions)
+```
+
+```{r}
+test <- test %>%
+  mutate(SalePrediction = pricepredictions)
+```
+
+```{r}
+predictionsDF <- test %>%
+  select(Id)%>%
+  mutate(SalePrice = pricepredictions)
+predictionsDF <- predictionsDF %>%
+  mutate(SalePrice = ifelse(is.na(SalePrice), mean(SalePrice, na.rm = TRUE), SalePrice))
+```
+
+```{r}
+predictionsDF %>%
+  filter(is.na(SalePrice))
+```
+
+```{r}
+write.csv(predictionsDF, file = 'HousingPricePredictionsVer1.csv', row.names = FALSE)
+```
+
