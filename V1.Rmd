@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 #TESTING PUSH
-auth <- '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'
+
 ```
 
 ```{r}
