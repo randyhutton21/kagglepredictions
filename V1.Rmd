@@ -14,14 +14,13 @@ library(tidyverse)
 ```
 
 ```{r}
-setwd("~/Library/CloudStorage/GoogleDrive-randyhutton21@gmail.com/My Drive/Kaggle/Test/kagglehousing/kagglehousing")
-test <- read_csv('test.csv')
-train <- read_csv('train.csv')
+test <- read_csv('https://raw.githubusercontent.com/randyhutton21/kagglepredictions/main/test.csv')
+train <- read_csv('https://raw.githubusercontent.com/randyhutton21/kagglepredictions/main/train.csv')
 head(train)
 head(test)
 ```
 
-```{r}
+```{r mutate datatypes}
 train <- train %>%
   mutate_at(c('MSZoning', 'MSSubClass', 'Street', 'Alley', 'LotShape', 'LandContour', 'Utilities', 'LotConfig',
               'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'PoolQC', 'Fence', 'MiscFeature', 'SaleType', 'SaleCondition','OverallQual', 'OverallCond', 
@@ -47,20 +46,20 @@ test <- test %>%
 summary(train)
 ```
 
-```{r}
+```{r establish correlations}
 correlationsframe <- train %>%
   select_if(is.numeric)%>%
   na.omit()
 correlationsframe
 ```
 
-```{r}
+```{r create correlation plot}
 library(corrplot)
 correlations <- cor(na.omit(correlationsframe))
 corrplot(correlations, method = "square")
 ```
 
-```{r}
+```{r create general linear model}
 model <- glm(SalePrice ~ GarageArea + GarageCars + Fireplaces + FullBath + GrLivArea + TotalBsmtSF + `1stFlrSF` + BsmtFinSF1, data = train)
 
 pricepredictions <- predict(model, test)
@@ -75,7 +74,7 @@ test <- test %>%
   mutate(SalePrediction = pricepredictions)
 ```
 
-```{r}
+```{r create final dataframe}
 predictionsDF <- test %>%
   select(Id)%>%
   mutate(SalePrice = pricepredictions)
@@ -88,7 +87,7 @@ predictionsDF %>%
   filter(is.na(SalePrice))
 ```
 
-```{r}
+```{r write file}
 write.csv(predictionsDF, file = 'HousingPricePredictionsVer1.csv', row.names = FALSE)
 ```
 
